@@ -653,4 +653,623 @@
     const ringGeo = new THREE.TorusGeometry(18, 0.08, 12, 220);
     const ringMat = new THREE.MeshBasicMaterial({ transparent:true, opacity:.25 });
     const ring1 = new THREE.Mesh(ringGeo, ringMat);
+    ring1.rotation.x = 0.7      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      background: var(--bg);
+      overflow-x:hidden;
+    }
+
+    /* 3D canvas background */
+    #bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      display:block;
+    }
+
+    /* Soft gradients over 3D */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(1000px 600px at 20% 20%, rgba(120,140,255,.22), transparent 60%),
+        radial-gradient(900px 700px at 80% 30%, rgba(180,120,255,.14), transparent 65%),
+        radial-gradient(1000px 700px at 50% 85%, rgba(60,255,220,.10), transparent 55%),
+        linear-gradient(to bottom, rgba(0,0,0,.12), rgba(0,0,0,.22));
+      mix-blend-mode: screen;
+      opacity: .95;
+    }
+    [data-theme="light"] .overlay{
+      mix-blend-mode: multiply;
+      opacity: .75;
+      background:
+        radial-gradient(1000px 600px at 20% 20%, rgba(70,95,255,.20), transparent 60%),
+        radial-gradient(900px 700px at 80% 30%, rgba(150,70,255,.12), transparent 65%),
+        radial-gradient(1000px 700px at 50% 85%, rgba(0,160,140,.10), transparent 55%),
+        linear-gradient(to bottom, rgba(255,255,255,.10), rgba(255,255,255,.22));
+    }
+
+    /* Layout */
+    .wrap{
+      position: relative;
+      z-index: 2;
+      min-height: 100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 28px 18px 60px;
+    }
+
+    .card{
+      width: min(1060px, 100%);
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      overflow:hidden;
+      transform-style: preserve-3d;
+      position: relative;
+    }
+
+    /* Top bar */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 14px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--stroke);
+      background: linear-gradient(to right, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 220px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: var(--card2);
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .dot{
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 18px rgba(140,160,255,.65);
+    }
+
+    .nav{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn{
+      appearance:none;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 650;
+      font-size: 13px;
+      letter-spacing:.2px;
+      cursor:pointer;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+      transform-style: preserve-3d;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.09); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn.primary{
+      border-color: rgba(140,160,255,.35);
+      background: rgba(140,160,255,.16);
+    }
+
+    .right-tools{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:flex-end;
+      min-width: 240px;
+    }
+
+    .switch{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: var(--card2);
+      cursor:pointer;
+      user-select:none;
+      font-size: 13px;
+      color: var(--muted);
+      transition: transform .18s ease, background .18s ease;
+    }
+    .switch:hover{ transform: translateY(-1px); }
+    .toggle{
+      width: 44px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.08);
+      position:relative;
+      flex: 0 0 auto;
+    }
+    .knob{
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.85);
+      position:absolute;
+      top: 1px; left: 1px;
+      transition: transform .22s ease;
+      box-shadow: 0 8px 18px rgba(0,0,0,.25);
+    }
+    [data-theme="light"] .knob{ background: rgba(10,18,40,.82); }
+    [data-theme="light"] .toggle .knob{ transform: translateX(20px); }
+
+    /* Main content */
+    .content{
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap: 18px;
+      padding: 18px;
+    }
+    @media (max-width: 980px){
+      .content{ grid-template-columns: 1fr; }
+      .brand, .right-tools{ min-width: unset; }
+    }
+
+    .left{
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      background: var(--card2);
+      position: relative;
+      overflow:hidden;
+    }
+
+    .pfp-wrap{
+      display:flex;
+      gap: 14px;
+      align-items:center;
+    }
+    .pfp{
+      width: 86px;
+      height: 86px;
+      border-radius: 20px;
+      object-fit: cover;
+      border: 1px solid var(--stroke);
+      box-shadow: 0 20px 55px rgba(0,0,0,.35);
+      transform: translateZ(18px);
+    }
+
+    .name{
+      font-size: 34px;
+      line-height: 1.05;
+      margin: 0;
+      letter-spacing: -0.6px;
+      transform: translateZ(20px);
+    }
+    .name .char{
+      display:inline-block;
+      opacity: 0;
+      transform: translateY(14px) rotateX(30deg);
+      filter: blur(6px);
+      animation: popIn .72s cubic-bezier(.2,.8,.2,1) forwards;
+    }
+    @keyframes popIn{
+      to{ opacity:1; transform: translateY(0) rotateX(0); filter: blur(0); }
+    }
+
+    .desc{
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-weight: 520;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .stat{
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      transform: translateZ(10px);
+    }
+    .stat .label{
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .stat .value{
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+
+    .info-row{
+      display:flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Right side preview */
+    .right{
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      background: var(--card2);
+      overflow:hidden;
+      position: relative;
+    }
+
+    .panel-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--stroke);
+      margin-bottom: 12px;
+    }
+    .panel-title h2{
+      margin: 0;
+      font-size: 15px;
+      letter-spacing:.2px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .preview{
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      overflow:hidden;
+      background: rgba(0,0,0,.22);
+      box-shadow: 0 18px 60px rgba(0,0,0,.30);
+      height: 520px;
+      transform: translateZ(10px);
+    }
+    iframe{
+      width:100%;
+      height:100%;
+      border:0;
+      background: transparent;
+    }
+
+    .hint{
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+
+    /* Subtle 3D tilt effect */
+    .tilt{
+      will-change: transform;
+      transition: transform .15s ease;
+    }
+  </style>
+</head>
+
+<body data-theme="dark">
+  <canvas id="bg"></canvas>
+  <div class="overlay"></div>
+
+  <div class="wrap">
+    <div class="card tilt" id="tiltCard">
+      <div class="topbar">
+        <div class="brand">
+          <span class="pill"><span class="dot"></span> Reniel Tabora</span>
+          <span class="pill" id="phTime">PH Time: --</span>
+        </div>
+
+        <div class="nav">
+          <button class="btn primary" data-target="home">Home</button>
+          <button class="btn" data-target="first">First Portfolio</button>
+          <button class="btn" data-target="autobot">Autobot</button>
+        </div>
+
+        <div class="right-tools">
+          <span class="pill" id="battery">Battery: --</span>
+          <div class="switch" id="themeToggle" title="Toggle Dark / Light">
+            <span id="themeLabel">Dark</span>
+            <span class="toggle"><span class="knob"></span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="left">
+          <div class="pfp-wrap">
+            <img class="pfp" alt="Reniel Tabora profile picture"
+              src="https://img.sanishtech.com/u/26a2f7005696403d64c7854507e2a4c9.jpg" />
+            <div>
+              <h1 class="name" id="animatedName" aria-label="Reniel Tabora"></h1>
+              <p class="desc">App Modder 2022-2026 and Editor videos</p>
+            </div>
+          </div>
+
+          <div class="stats" aria-label="Stats">
+            <div class="stat">
+              <div class="label">Followers</div>
+              <div class="value">41k</div>
+            </div>
+            <div class="stat">
+              <div class="label">Likes</div>
+              <div class="value">392k</div>
+            </div>
+            <div class="stat">
+              <div class="label">Views</div>
+              <div class="value" id="views">0</div>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <span class="pill" id="dateLine">Date: --</span>
+            <span class="pill" id="modeLine">Mode: Dark</span>
+          </div>
+
+          <p class="hint">
+            Tip: Click <b>First Portfolio</b> or <b>Autobot</b> to preview inside this page.
+            Views automatically increase when someone opens this site (per session).
+          </p>
+        </div>
+
+        <div class="right">
+          <div class="panel-title">
+            <h2 id="panelTitle">Welcome</h2>
+            <span class="pill" id="panelUrl">—</span>
+          </div>
+
+          <div class="preview">
+            <iframe id="frame" title="Preview"></iframe>
+          </div>
+
+          <p class="hint" id="panelHint">
+            Select a project from the buttons above to load it here.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script>
+    // --------- Animated name (letter-by-letter) ----------
+    const nameText = "Reniel Tabora";
+    const nameEl = document.getElementById("animatedName");
+    nameEl.innerHTML = "";
+    [...nameText].forEach((ch, i) => {
+      const span = document.createElement("span");
+      span.className = "char";
+      span.textContent = ch === " " ? "\u00A0" : ch;
+      span.style.animationDelay = (i * 0.04) + "s";
+      nameEl.appendChild(span);
+    });
+
+    // --------- PH date/time (Asia/Manila) ----------
+    const phTimeEl = document.getElementById("phTime");
+    const dateLineEl = document.getElementById("dateLine");
+    function updatePHClock(){
+      const now = new Date();
+      const timeStr = new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      }).format(now);
+
+      const dateStr = new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "2-digit"
+      }).format(now);
+
+      phTimeEl.textContent = "PH Time: " + timeStr;
+      dateLineEl.textContent = "Date: " + dateStr;
+    }
+    updatePHClock();
+    setInterval(updatePHClock, 1000);
+
+    // --------- Views counter (per session, no backend) ----------
+    const viewsEl = document.getElementById("views");
+    const KEY_TOTAL = "rt_total_views";
+    const KEY_SESSION = "rt_session_counted";
+    const total = Number(localStorage.getItem(KEY_TOTAL) || "0");
+    const counted = sessionStorage.getItem(KEY_SESSION);
+
+    if(!counted){
+      const newTotal = total + 1;
+      localStorage.setItem(KEY_TOTAL, String(newTotal));
+      sessionStorage.setItem(KEY_SESSION, "1");
+      viewsEl.textContent = String(newTotal);
+    } else {
+      viewsEl.textContent = String(total);
+    }
+
+    // --------- Battery percentage (with fallback) ----------
+    const batteryEl = document.getElementById("battery");
+    async function initBattery(){
+      try{
+        if(!navigator.getBattery){
+          batteryEl.textContent = "Battery: N/A";
+          return;
+        }
+        const bat = await navigator.getBattery();
+        const set = () => {
+          const pct = Math.round((bat.level || 0) * 100);
+          batteryEl.textContent = "Battery: " + pct + "%";
+        };
+        set();
+        bat.addEventListener("levelchange", set);
+      } catch(e){
+        batteryEl.textContent = "Battery: N/A";
+      }
+    }
+    initBattery();
+
+    // --------- Dark / Light mode ----------
+    const themeToggle = document.getElementById("themeToggle");
+    const themeLabel = document.getElementById("themeLabel");
+    const modeLine = document.getElementById("modeLine");
+
+    const THEME_KEY = "rt_theme";
+    function applyTheme(theme){
+      document.body.setAttribute("data-theme", theme);
+      themeLabel.textContent = theme === "light" ? "Light" : "Dark";
+      modeLine.textContent = "Mode: " + (theme === "light" ? "Light" : "Dark");
+      localStorage.setItem(THEME_KEY, theme);
+    }
+    applyTheme(localStorage.getItem(THEME_KEY) || "dark");
+
+    themeToggle.addEventListener("click", () => {
+      const current = document.body.getAttribute("data-theme");
+      applyTheme(current === "dark" ? "light" : "dark");
+    });
+
+    // --------- Top buttons + iframe preview ----------
+    const frame = document.getElementById("frame");
+    const panelTitle = document.getElementById("panelTitle");
+    const panelUrl = document.getElementById("panelUrl");
+    const panelHint = document.getElementById("panelHint");
+
+    const targets = {
+      home: { title: "Welcome", url: "", hint: "Select a project from the buttons above to load it here." },
+      first: { title: "First Portfolio", url: "https://visionary-naiad-bb54e3.netlify.app/", hint: "Preview loaded. If it blocks iframe, click Open in new tab." },
+      autobot: { title: "Autobot", url: "https://auto-zvok.onrender.com/", hint: "Preview loaded. If it blocks iframe, click Open in new tab." }
+    };
+
+    function loadTarget(key){
+      const t = targets[key];
+      panelTitle.textContent = t.title;
+      panelUrl.textContent = t.url || "—";
+      panelHint.textContent = t.hint;
+
+      if(!t.url){
+        frame.srcdoc = `
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;
+                      font-family:system-ui;color:#bbb;background:transparent;">
+            <div style="text-align:center;max-width:520px;padding:20px;">
+              <h2 style="margin:0 0 10px;color:#ddd;">Reniel Tabora</h2>
+              <p style="margin:0;line-height:1.5;">
+                Click <b>First Portfolio</b> or <b>Autobot</b> to preview here.
+              </p>
+              <p style="margin-top:10px;opacity:.85;">App Modder 2022-2026 • Video Editor</p>
+            </div>
+          </div>`;
+        return;
+      }
+
+      // Try iframe. If site blocks embedding, user can still open in new tab.
+      frame.removeAttribute("srcdoc");
+      frame.src = t.url;
+
+      // Add "open in new tab" automatically if embedding is blocked
+      setTimeout(() => {
+        panelHint.innerHTML = `${t.hint} <a href="${t.url}" target="_blank" rel="noopener" style="color:inherit;font-weight:800;text-decoration:underline;">Open in new tab</a>`;
+      }, 800);
+    }
+
+    document.querySelectorAll("[data-target]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        // UI active state
+        document.querySelectorAll(".btn").forEach(b=>b.classList.remove("primary"));
+        btn.classList.add("primary");
+        loadTarget(btn.dataset.target);
+      });
+    });
+
+    loadTarget("home");
+
+    // --------- 3D tilt card (mouse / touch) ----------
+    const tiltCard = document.getElementById("tiltCard");
+    function setTilt(clientX, clientY){
+      const rect = tiltCard.getBoundingClientRect();
+      const x = (clientX - rect.left) / rect.width - 0.5;
+      const y = (clientY - rect.top) / rect.height - 0.5;
+      const rx = (-y * 7);
+      const ry = (x * 10);
+      tiltCard.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) translateZ(0)`;
+    }
+    function resetTilt(){ tiltCard.style.transform = `rotateX(0deg) rotateY(0deg)`; }
+
+    window.addEventListener("mousemove", (e)=> setTilt(e.clientX, e.clientY), {passive:true});
+    window.addEventListener("mouseleave", resetTilt);
+    window.addEventListener("touchmove", (e)=>{
+      if(e.touches && e.touches[0]) setTilt(e.touches[0].clientX, e.touches[0].clientY);
+    }, {passive:true});
+    window.addEventListener("touchend", resetTilt);
+
+    // --------- Three.js 3D background (premium floating particles) ----------
+    const canvas = document.getElementById("bg");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
+    camera.position.z = 40;
+
+    function resize(){
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    // Particles
+    const count = 1500;
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const speeds = new Float32Array(count);
+
+    for(let i=0;i<count;i++){
+      const i3 = i*3;
+      positions[i3+0] = (Math.random()-0.5) * 140;
+      positions[i3+1] = (Math.random()-0.5) * 90;
+      positions[i3+2] = (Math.random()-0.5) * 120;
+      speeds[i] = 0.2 + Math.random() * 0.8;
+    }
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+    const mat = new THREE.PointsMaterial({
+      size: 0.22,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false
+    });
+
+    const points = new THREE.Points(geo, mat);
+    scene.add(points);
+
+    // Subtle rings
+    const ringGeo = new THREE.TorusGeometry(18, 0.08, 12, 220);
+    const ringMat = new THREE.MeshBasicMaterial({ transparent:true, opacity:.25 });
+    const ring1 = new THREE.Mesh(ringGeo, ringMat);
     ring1.rotation.x = 0.7
