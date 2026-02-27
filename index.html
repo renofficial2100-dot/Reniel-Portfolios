@@ -1,1275 +1,680 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Reniel Tabora • Portfolio</title>
-  <meta name="description" content="Reniel Tabora — App Modder 2022-2026 and Editor videos" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Reniel Tabora — 3D Portfolio</title>
+  <meta name="theme-color" content="#0b1220" />
   <style>
     :root{
-      --bg: #070A12;
+      --bg0:#070a12;
+      --bg1:#0b1220;
       --card: rgba(255,255,255,.08);
-      --card2: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.12);
       --text: rgba(255,255,255,.92);
       --muted: rgba(255,255,255,.72);
-      --stroke: rgba(255,255,255,.16);
-      --accent: rgba(140, 160, 255, 1);
-      --shadow: 0 20px 80px rgba(0,0,0,.45);
-      --blur: blur(16px);
+      --muted2: rgba(255,255,255,.55);
+      --stroke: rgba(255,255,255,.14);
+      --shadow: 0 18px 55px rgba(0,0,0,.48);
       --radius: 22px;
+
+      /* dynamic accent (changes via JS) */
+      --hue: 210;
+      --accent: hsl(var(--hue) 92% 62%);
+      --accent2: hsl(calc(var(--hue) + 40) 92% 62%);
+      --accent3: hsl(calc(var(--hue) + 80) 92% 62%);
+      --glow: 0 0 22px rgba(255,255,255,.22), 0 0 45px color-mix(in srgb, var(--accent), transparent 65%);
     }
+
     [data-theme="light"]{
-      --bg: #F6F7FB;
-      --card: rgba(10,18,40,.06);
-      --card2: rgba(10,18,40,.045);
-      --text: rgba(10,18,40,.92);
-      --muted: rgba(10,18,40,.68);
-      --stroke: rgba(10,18,40,.14);
-      --accent: rgba(70, 95, 255, 1);
-      --shadow: 0 18px 70px rgba(10,18,40,.18);
-      --blur: blur(14px);
+      --bg0:#f6f8ff;
+      --bg1:#e9eeff;
+      --card: rgba(0,0,0,.06);
+      --card2: rgba(0,0,0,.09);
+      --text: rgba(0,0,0,.88);
+      --muted: rgba(0,0,0,.65);
+      --muted2: rgba(0,0,0,.5);
+      --stroke: rgba(0,0,0,.12);
+      --shadow: 0 18px 55px rgba(0,0,0,.20);
+      --glow: 0 0 22px rgba(0,0,0,.10), 0 0 45px color-mix(in srgb, var(--accent), transparent 70%);
     }
 
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
       color: var(--text);
-      background: var(--bg);
+      background:
+        radial-gradient(1200px 900px at 15% 10%, color-mix(in srgb, var(--accent), transparent 85%), transparent 60%),
+        radial-gradient(900px 700px at 85% 25%, color-mix(in srgb, var(--accent2), transparent 85%), transparent 60%),
+        radial-gradient(800px 600px at 55% 90%, color-mix(in srgb, var(--accent3), transparent 86%), transparent 58%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
       overflow-x:hidden;
     }
 
-    /* 3D canvas background */
-    #bg {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      width: 100%;
-      height: 100%;
-      display:block;
+    /* subtle animated noise layer */
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,.06), transparent 30%),
+        radial-gradient(circle at 80% 70%, rgba(255,255,255,.05), transparent 35%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 6px);
+      mix-blend-mode: overlay;
+      opacity:.25;
+      pointer-events:none;
+      filter: blur(.2px);
+      animation: drift 14s linear infinite;
+    }
+    @keyframes drift{
+      0%{ transform: translate3d(0,0,0); }
+      50%{ transform: translate3d(-12px, 10px, 0); }
+      100%{ transform: translate3d(0,0,0); }
     }
 
-    /* Soft gradients over 3D */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      background:
-        radial-gradient(1000px 600px at 20% 20%, rgba(120,140,255,.22), transparent 60%),
-        radial-gradient(900px 700px at 80% 30%, rgba(180,120,255,.14), transparent 65%),
-        radial-gradient(1000px 700px at 50% 85%, rgba(60,255,220,.10), transparent 55%),
-        linear-gradient(to bottom, rgba(0,0,0,.12), rgba(0,0,0,.22));
-      mix-blend-mode: screen;
-      opacity: .95;
-    }
-    [data-theme="light"] .overlay{
-      mix-blend-mode: multiply;
-      opacity: .75;
-      background:
-        radial-gradient(1000px 600px at 20% 20%, rgba(70,95,255,.20), transparent 60%),
-        radial-gradient(900px 700px at 80% 30%, rgba(150,70,255,.12), transparent 65%),
-        radial-gradient(1000px 700px at 50% 85%, rgba(0,160,140,.10), transparent 55%),
-        linear-gradient(to bottom, rgba(255,255,255,.10), rgba(255,255,255,.22));
-    }
-
-    /* Layout */
     .wrap{
-      position: relative;
-      z-index: 2;
-      min-height: 100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: 28px 18px 60px;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px 14px 28px;
+      padding-bottom: calc(28px + env(safe-area-inset-bottom));
     }
 
-    .card{
-      width: min(1060px, 100%);
-      border-radius: var(--radius);
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      backdrop-filter: var(--blur);
-      -webkit-backdrop-filter: var(--blur);
-      overflow:hidden;
-      transform-style: preserve-3d;
-      position: relative;
-    }
-
-    /* Top bar */
+    /* top bar */
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap: 14px;
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--stroke);
-      background: linear-gradient(to right, rgba(255,255,255,.06), rgba(255,255,255,.02));
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      min-width: 220px;
-    }
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: var(--card2);
-      font-size: 13px;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-    .dot{
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 18px rgba(140,160,255,.65);
+      gap:10px;
+      margin-bottom: 14px;
     }
 
-    .nav{
+    .pill{
       display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
+      gap:10px;
+      align-items:center;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .status{
+      display:flex; gap:10px; flex-wrap:wrap;
+      align-items:center;
+      font-size: 12px;
+      color: var(--muted);
+      line-height:1.2;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--accent);
+      box-shadow: var(--glow);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse{
+      0%,100%{ transform:scale(1); opacity:.75;}
+      50%{ transform:scale(1.35); opacity:1;}
+    }
+
+    .toggle{
+      display:flex; gap:8px;
+      align-items:center;
     }
     .btn{
-      appearance:none;
       border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
+      background: linear-gradient(180deg, var(--card2), var(--card));
       color: var(--text);
       padding: 10px 12px;
-      border-radius: 12px;
+      border-radius: 14px;
       font-weight: 650;
       font-size: 13px;
       letter-spacing:.2px;
-      cursor:pointer;
-      transition: transform .18s ease, background .18s ease, border-color .18s ease;
-      transform-style: preserve-3d;
-    }
-    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.09); }
-    .btn:active{ transform: translateY(0px) scale(.99); }
-    .btn.primary{
-      border-color: rgba(140,160,255,.35);
-      background: rgba(140,160,255,.16);
-    }
-
-    .right-tools{
-      display:flex;
-      gap: 10px;
-      align-items:center;
-      justify-content:flex-end;
-      min-width: 240px;
-    }
-
-    .switch{
-      display:inline-flex;
-      align-items:center;
-      gap: 10px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: var(--card2);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
       cursor:pointer;
       user-select:none;
-      font-size: 13px;
-      color: var(--muted);
-      transition: transform .18s ease, background .18s ease;
+      -webkit-tap-highlight-color: transparent;
+      position:relative;
+      overflow:hidden;
+      transform: translateZ(0);
+      transition: transform .15s ease, border-color .2s ease, filter .2s ease;
     }
-    .switch:hover{ transform: translateY(-1px); }
-    .toggle{
-      width: 44px;
-      height: 24px;
-      border-radius: 999px;
+    .btn:active{ transform: scale(.98); }
+    .btn:hover{ border-color: color-mix(in srgb, var(--accent), var(--stroke) 55%); }
+
+    .btn::after{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(220px 90px at var(--mx,50%) var(--my,50%),
+        color-mix(in srgb, var(--accent), transparent 60%), transparent 70%);
+      opacity: 0;
+      transition: opacity .18s ease;
+      pointer-events:none;
+    }
+    .btn:hover::after{ opacity: 1; }
+
+    .btn.primary{
+      border-color: color-mix(in srgb, var(--accent), var(--stroke) 45%);
+    }
+
+    /* 3D stage */
+    .stage{
+      perspective: 1100px;
+      perspective-origin: 50% 30%;
+    }
+
+    .card3d{
+      border-radius: var(--radius);
       border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.08);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--card2), transparent 0%), var(--card));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow:hidden;
+      transform-style: preserve-3d;
+      position:relative;
+    }
+
+    /* glossy rim */
+    .card3d::before{
+      content:"";
+      position:absolute; inset:-1px;
+      background:
+        radial-gradient(600px 220px at 15% 0%, color-mix(in srgb, var(--accent), transparent 72%), transparent 60%),
+        radial-gradient(520px 240px at 85% 10%, color-mix(in srgb, var(--accent2), transparent 75%), transparent 62%),
+        linear-gradient(180deg, rgba(255,255,255,.12), transparent 45%);
+      opacity:.65;
+      pointer-events:none;
+      transform: translateZ(20px);
+      filter: blur(.2px);
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      padding: 18px;
+      position:relative;
+      transform-style: preserve-3d;
+    }
+
+    .heroTop{
+      display:flex;
+      justify-content:space-between;
+      gap: 14px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      transform-style: preserve-3d;
+    }
+
+    .pfpWrap{
+      width: 92px; height: 92px;
+      border-radius: 26px;
+      border: 1px solid color-mix(in srgb, var(--accent), var(--stroke) 65%);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent), transparent 78%), transparent);
+      box-shadow: var(--glow), var(--shadow);
+      overflow:hidden;
+      transform: translateZ(40px);
       position:relative;
       flex: 0 0 auto;
+      animation: floaty 3.2s ease-in-out infinite;
     }
-    .knob{
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.85);
-      position:absolute;
-      top: 1px; left: 1px;
-      transition: transform .22s ease;
-      box-shadow: 0 8px 18px rgba(0,0,0,.25);
+    @keyframes floaty{
+      0%,100%{ transform: translateZ(40px) translateY(0); }
+      50%{ transform: translateZ(40px) translateY(-8px); }
     }
-    [data-theme="light"] .knob{ background: rgba(10,18,40,.82); }
-    [data-theme="light"] .toggle .knob{ transform: translateX(20px); }
-
-    /* Main content */
-    .content{
-      display:grid;
-      grid-template-columns: 420px 1fr;
-      gap: 18px;
-      padding: 18px;
+    .pfpWrap img{
+      width:100%; height:100%;
+      object-fit:cover;
+      display:block;
+      transform: scale(1.05);
     }
-    @media (max-width: 980px){
-      .content{ grid-template-columns: 1fr; }
-      .brand, .right-tools{ min-width: unset; }
+    .pfpWrap::after{
+      content:"";
+      position:absolute; inset:-20%;
+      background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.18), transparent 40%);
+      pointer-events:none;
+      transform: rotate(12deg);
     }
 
-    .left{
-      padding: 18px;
-      border-radius: 18px;
-      border: 1px solid var(--stroke);
-      background: var(--card2);
-      position: relative;
-      overflow:hidden;
+    .title{
+      min-width: 220px;
+      flex:1 1 auto;
+      transform: translateZ(32px);
     }
 
-    .pfp-wrap{
+    .nameRow{
       display:flex;
-      gap: 14px;
       align-items:center;
-    }
-    .pfp{
-      width: 86px;
-      height: 86px;
-      border-radius: 20px;
-      object-fit: cover;
-      border: 1px solid var(--stroke);
-      box-shadow: 0 20px 55px rgba(0,0,0,.35);
-      transform: translateZ(18px);
+      gap: 10px;
+      flex-wrap:wrap;
     }
 
     .name{
-      font-size: 34px;
-      line-height: 1.05;
-      margin: 0;
-      letter-spacing: -0.6px;
-      transform: translateZ(20px);
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      line-height: 1.1;
+      margin:0;
+      text-shadow: 0 10px 24px rgba(0,0,0,.35);
+      position:relative;
     }
-    .name .char{
+
+    /* typing look */
+    .caret{
       display:inline-block;
-      opacity: 0;
-      transform: translateY(14px) rotateX(30deg);
-      filter: blur(6px);
-      animation: popIn .72s cubic-bezier(.2,.8,.2,1) forwards;
+      width: 10px;
+      height: 1.05em;
+      transform: translateY(2px);
+      border-right: 3px solid var(--accent);
+      margin-left: 3px;
+      animation: blink .85s steps(1) infinite;
+      filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent), transparent 40%));
     }
-    @keyframes popIn{
-      to{ opacity:1; transform: translateY(0) rotateX(0); filter: blur(0); }
+    @keyframes blink{ 50%{ opacity:0; } }
+
+    /* rainbow shimmer letters */
+    .shimmer{
+      background: linear-gradient(90deg,
+        hsl(var(--hue) 95% 65%),
+        hsl(calc(var(--hue) + 40) 95% 65%),
+        hsl(calc(var(--hue) + 80) 95% 65%),
+        hsl(calc(var(--hue) + 120) 95% 65%),
+        hsl(calc(var(--hue) + 160) 95% 65%));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 10px 22px rgba(0,0,0,.25));
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, var(--accent), var(--stroke) 60%);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent), transparent 84%), var(--card));
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+      box-shadow: var(--glow);
+      transform: translateZ(24px);
+      white-space:nowrap;
+    }
+    .check{
+      width: 18px; height: 18px;
+      border-radius: 6px;
+      background: var(--accent);
+      display:inline-grid;
+      place-items:center;
+      color: #071018;
+      font-weight: 900;
+      box-shadow: var(--glow);
     }
 
     .desc{
       margin: 10px 0 0;
       color: var(--muted);
-      font-weight: 520;
+      font-size: 14px;
+      line-height: 1.45;
+      max-width: 52ch;
     }
 
     .stats{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      margin-top: 12px;
+      transform: translateZ(20px);
+    }
+
+    .chip{
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: color-mix(in srgb, var(--card), transparent 0%);
+      font-size: 13px;
+      color: var(--muted);
+      display:flex;
+      gap: 8px;
+      align-items:baseline;
+      box-shadow: 0 12px 30px rgba(0,0,0,.22);
+    }
+    .chip b{
+      color: var(--text);
+      font-size: 14px;
+      letter-spacing:.2px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 0 18px 18px;
+      transform-style: preserve-3d;
+    }
+
+    .sectionTitle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-top: 6px;
+      transform: translateZ(16px);
+    }
+    .sectionTitle h2{
+      margin:0;
+      font-size: 14px;
+      letter-spacing:.18em;
+      text-transform: uppercase;
+      color: var(--muted2);
+      font-weight: 900;
+    }
+
+    .toolsRow{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
-      margin-top: 16px;
+      transform: translateZ(20px);
     }
-    .stat{
-      padding: 12px;
-      border-radius: 16px;
+
+    .toolBtn{
+      padding: 12px 12px;
+      border-radius: 18px;
       border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
-      transform: translateZ(10px);
-    }
-    .stat .label{
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .stat .value{
-      font-size: 18px;
-      font-weight: 800;
+      background: linear-gradient(180deg, var(--card2), var(--card));
+      color: var(--text);
+      font-weight: 900;
+      font-size: 13px;
       letter-spacing: .2px;
-    }
-
-    .info-row{
-      display:flex;
-      gap: 10px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-
-    /* Right side preview */
-    .right{
-      padding: 18px;
-      border-radius: 18px;
-      border: 1px solid var(--stroke);
-      background: var(--card2);
-      overflow:hidden;
-      position: relative;
-    }
-
-    .panel-title{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--stroke);
-      margin-bottom: 12px;
-    }
-    .panel-title h2{
-      margin: 0;
-      font-size: 15px;
-      letter-spacing:.2px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .preview{
-      border-radius: 18px;
-      border: 1px solid var(--stroke);
-      overflow:hidden;
-      background: rgba(0,0,0,.22);
-      box-shadow: 0 18px 60px rgba(0,0,0,.30);
-      height: 520px;
-      transform: translateZ(10px);
-    }
-    iframe{
-      width:100%;
-      height:100%;
-      border:0;
-      background: transparent;
-    }
-
-    .hint{
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-      margin-top: 12px;
-    }
-
-    /* Subtle 3D tilt effect */
-    .tilt{
-      will-change: transform;
-      transition: transform .15s ease;
-    }
-  </style>
-</head>
-
-<body data-theme="dark">
-  <canvas id="bg"></canvas>
-  <div class="overlay"></div>
-
-  <div class="wrap">
-    <div class="card tilt" id="tiltCard">
-      <div class="topbar">
-        <div class="brand">
-          <span class="pill"><span class="dot"></span> Reniel Tabora</span>
-          <span class="pill" id="phTime">PH Time: --</span>
-        </div>
-
-        <div class="nav">
-          <button class="btn primary" data-target="home">Home</button>
-          <button class="btn" data-target="first">First Portfolio</button>
-          <button class="btn" data-target="autobot">Autobot</button>
-        </div>
-
-        <div class="right-tools">
-          <span class="pill" id="battery">Battery: --</span>
-          <div class="switch" id="themeToggle" title="Toggle Dark / Light">
-            <span id="themeLabel">Dark</span>
-            <span class="toggle"><span class="knob"></span></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="content">
-        <div class="left">
-          <div class="pfp-wrap">
-            <img class="pfp" alt="Reniel Tabora profile picture"
-              src="https://img.sanishtech.com/u/26a2f7005696403d64c7854507e2a4c9.jpg" />
-            <div>
-              <h1 class="name" id="animatedName" aria-label="Reniel Tabora"></h1>
-              <p class="desc">App Modder 2022-2026 and Editor videos</p>
-            </div>
-          </div>
-
-          <div class="stats" aria-label="Stats">
-            <div class="stat">
-              <div class="label">Followers</div>
-              <div class="value">41k</div>
-            </div>
-            <div class="stat">
-              <div class="label">Likes</div>
-              <div class="value">392k</div>
-            </div>
-            <div class="stat">
-              <div class="label">Views</div>
-              <div class="value" id="views">0</div>
-            </div>
-          </div>
-
-          <div class="info-row">
-            <span class="pill" id="dateLine">Date: --</span>
-            <span class="pill" id="modeLine">Mode: Dark</span>
-          </div>
-
-          <p class="hint">
-            Tip: Click <b>First Portfolio</b> or <b>Autobot</b> to preview inside this page.
-            Views automatically increase when someone opens this site (per session).
-          </p>
-        </div>
-
-        <div class="right">
-          <div class="panel-title">
-            <h2 id="panelTitle">Welcome</h2>
-            <span class="pill" id="panelUrl">—</span>
-          </div>
-
-          <div class="preview">
-            <iframe id="frame" title="Preview"></iframe>
-          </div>
-
-          <p class="hint" id="panelHint">
-            Select a project from the buttons above to load it here.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Three.js -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script>
-    // --------- Animated name (letter-by-letter) ----------
-    const nameText = "Reniel Tabora";
-    const nameEl = document.getElementById("animatedName");
-    nameEl.innerHTML = "";
-    [...nameText].forEach((ch, i) => {
-      const span = document.createElement("span");
-      span.className = "char";
-      span.textContent = ch === " " ? "\u00A0" : ch;
-      span.style.animationDelay = (i * 0.04) + "s";
-      nameEl.appendChild(span);
-    });
-
-    // --------- PH date/time (Asia/Manila) ----------
-    const phTimeEl = document.getElementById("phTime");
-    const dateLineEl = document.getElementById("dateLine");
-    function updatePHClock(){
-      const now = new Date();
-      const timeStr = new Intl.DateTimeFormat("en-PH", {
-        timeZone: "Asia/Manila",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-      }).format(now);
-
-      const dateStr = new Intl.DateTimeFormat("en-PH", {
-        timeZone: "Asia/Manila",
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "2-digit"
-      }).format(now);
-
-      phTimeEl.textContent = "PH Time: " + timeStr;
-      dateLineEl.textContent = "Date: " + dateStr;
-    }
-    updatePHClock();
-    setInterval(updatePHClock, 1000);
-
-    // --------- Views counter (per session, no backend) ----------
-    const viewsEl = document.getElementById("views");
-    const KEY_TOTAL = "rt_total_views";
-    const KEY_SESSION = "rt_session_counted";
-    const total = Number(localStorage.getItem(KEY_TOTAL) || "0");
-    const counted = sessionStorage.getItem(KEY_SESSION);
-
-    if(!counted){
-      const newTotal = total + 1;
-      localStorage.setItem(KEY_TOTAL, String(newTotal));
-      sessionStorage.setItem(KEY_SESSION, "1");
-      viewsEl.textContent = String(newTotal);
-    } else {
-      viewsEl.textContent = String(total);
-    }
-
-    // --------- Battery percentage (with fallback) ----------
-    const batteryEl = document.getElementById("battery");
-    async function initBattery(){
-      try{
-        if(!navigator.getBattery){
-          batteryEl.textContent = "Battery: N/A";
-          return;
-        }
-        const bat = await navigator.getBattery();
-        const set = () => {
-          const pct = Math.round((bat.level || 0) * 100);
-          batteryEl.textContent = "Battery: " + pct + "%";
-        };
-        set();
-        bat.addEventListener("levelchange", set);
-      } catch(e){
-        batteryEl.textContent = "Battery: N/A";
-      }
-    }
-    initBattery();
-
-    // --------- Dark / Light mode ----------
-    const themeToggle = document.getElementById("themeToggle");
-    const themeLabel = document.getElementById("themeLabel");
-    const modeLine = document.getElementById("modeLine");
-
-    const THEME_KEY = "rt_theme";
-    function applyTheme(theme){
-      document.body.setAttribute("data-theme", theme);
-      themeLabel.textContent = theme === "light" ? "Light" : "Dark";
-      modeLine.textContent = "Mode: " + (theme === "light" ? "Light" : "Dark");
-      localStorage.setItem(THEME_KEY, theme);
-    }
-    applyTheme(localStorage.getItem(THEME_KEY) || "dark");
-
-    themeToggle.addEventListener("click", () => {
-      const current = document.body.getAttribute("data-theme");
-      applyTheme(current === "dark" ? "light" : "dark");
-    });
-
-    // --------- Top buttons + iframe preview ----------
-    const frame = document.getElementById("frame");
-    const panelTitle = document.getElementById("panelTitle");
-    const panelUrl = document.getElementById("panelUrl");
-    const panelHint = document.getElementById("panelHint");
-
-    const targets = {
-      home: { title: "Welcome", url: "", hint: "Select a project from the buttons above to load it here." },
-      first: { title: "First Portfolio", url: "https://visionary-naiad-bb54e3.netlify.app/", hint: "Preview loaded. If it blocks iframe, click Open in new tab." },
-      autobot: { title: "Autobot", url: "https://auto-zvok.onrender.com/", hint: "Preview loaded. If it blocks iframe, click Open in new tab." }
-    };
-
-    function loadTarget(key){
-      const t = targets[key];
-      panelTitle.textContent = t.title;
-      panelUrl.textContent = t.url || "—";
-      panelHint.textContent = t.hint;
-
-      if(!t.url){
-        frame.srcdoc = `
-          <div style="height:100%;display:flex;align-items:center;justify-content:center;
-                      font-family:system-ui;color:#bbb;background:transparent;">
-            <div style="text-align:center;max-width:520px;padding:20px;">
-              <h2 style="margin:0 0 10px;color:#ddd;">Reniel Tabora</h2>
-              <p style="margin:0;line-height:1.5;">
-                Click <b>First Portfolio</b> or <b>Autobot</b> to preview here.
-              </p>
-              <p style="margin-top:10px;opacity:.85;">App Modder 2022-2026 • Video Editor</p>
-            </div>
-          </div>`;
-        return;
-      }
-
-      // Try iframe. If site blocks embedding, user can still open in new tab.
-      frame.removeAttribute("srcdoc");
-      frame.src = t.url;
-
-      // Add "open in new tab" automatically if embedding is blocked
-      setTimeout(() => {
-        panelHint.innerHTML = `${t.hint} <a href="${t.url}" target="_blank" rel="noopener" style="color:inherit;font-weight:800;text-decoration:underline;">Open in new tab</a>`;
-      }, 800);
-    }
-
-    document.querySelectorAll("[data-target]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        // UI active state
-        document.querySelectorAll(".btn").forEach(b=>b.classList.remove("primary"));
-        btn.classList.add("primary");
-        loadTarget(btn.dataset.target);
-      });
-    });
-
-    loadTarget("home");
-
-    // --------- 3D tilt card (mouse / touch) ----------
-    const tiltCard = document.getElementById("tiltCard");
-    function setTilt(clientX, clientY){
-      const rect = tiltCard.getBoundingClientRect();
-      const x = (clientX - rect.left) / rect.width - 0.5;
-      const y = (clientY - rect.top) / rect.height - 0.5;
-      const rx = (-y * 7);
-      const ry = (x * 10);
-      tiltCard.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) translateZ(0)`;
-    }
-    function resetTilt(){ tiltCard.style.transform = `rotateX(0deg) rotateY(0deg)`; }
-
-    window.addEventListener("mousemove", (e)=> setTilt(e.clientX, e.clientY), {passive:true});
-    window.addEventListener("mouseleave", resetTilt);
-    window.addEventListener("touchmove", (e)=>{
-      if(e.touches && e.touches[0]) setTilt(e.touches[0].clientX, e.touches[0].clientY);
-    }, {passive:true});
-    window.addEventListener("touchend", resetTilt);
-
-    // --------- Three.js 3D background (premium floating particles) ----------
-    const canvas = document.getElementById("bg");
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
-    camera.position.z = 40;
-
-    function resize(){
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-    }
-    window.addEventListener("resize", resize);
-    resize();
-
-    // Particles
-    const count = 1500;
-    const geo = new THREE.BufferGeometry();
-    const positions = new Float32Array(count * 3);
-    const speeds = new Float32Array(count);
-
-    for(let i=0;i<count;i++){
-      const i3 = i*3;
-      positions[i3+0] = (Math.random()-0.5) * 140;
-      positions[i3+1] = (Math.random()-0.5) * 90;
-      positions[i3+2] = (Math.random()-0.5) * 120;
-      speeds[i] = 0.2 + Math.random() * 0.8;
-    }
-    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-    const mat = new THREE.PointsMaterial({
-      size: 0.22,
-      transparent: true,
-      opacity: 0.85,
-      depthWrite: false
-    });
-
-    const points = new THREE.Points(geo, mat);
-    scene.add(points);
-
-    // Subtle rings
-    const ringGeo = new THREE.TorusGeometry(18, 0.08, 12, 220);
-    const ringMat = new THREE.MeshBasicMaterial({ transparent:true, opacity:.25 });
-    const ring1 = new THREE.Mesh(ringGeo, ringMat);
-    ring1.rotation.x = 0.7      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      color: var(--text);
-      background: var(--bg);
-      overflow-x:hidden;
-    }
-
-    /* 3D canvas background */
-    #bg {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      width: 100%;
-      height: 100%;
-      display:block;
-    }
-
-    /* Soft gradients over 3D */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      background:
-        radial-gradient(1000px 600px at 20% 20%, rgba(120,140,255,.22), transparent 60%),
-        radial-gradient(900px 700px at 80% 30%, rgba(180,120,255,.14), transparent 65%),
-        radial-gradient(1000px 700px at 50% 85%, rgba(60,255,220,.10), transparent 55%),
-        linear-gradient(to bottom, rgba(0,0,0,.12), rgba(0,0,0,.22));
-      mix-blend-mode: screen;
-      opacity: .95;
-    }
-    [data-theme="light"] .overlay{
-      mix-blend-mode: multiply;
-      opacity: .75;
-      background:
-        radial-gradient(1000px 600px at 20% 20%, rgba(70,95,255,.20), transparent 60%),
-        radial-gradient(900px 700px at 80% 30%, rgba(150,70,255,.12), transparent 65%),
-        radial-gradient(1000px 700px at 50% 85%, rgba(0,160,140,.10), transparent 55%),
-        linear-gradient(to bottom, rgba(255,255,255,.10), rgba(255,255,255,.22));
-    }
-
-    /* Layout */
-    .wrap{
-      position: relative;
-      z-index: 2;
-      min-height: 100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: 28px 18px 60px;
-    }
-
-    .card{
-      width: min(1060px, 100%);
-      border-radius: var(--radius);
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      backdrop-filter: var(--blur);
-      -webkit-backdrop-filter: var(--blur);
-      overflow:hidden;
-      transform-style: preserve-3d;
-      position: relative;
-    }
-
-    /* Top bar */
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 14px;
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--stroke);
-      background: linear-gradient(to right, rgba(255,255,255,.06), rgba(255,255,255,.02));
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      min-width: 220px;
-    }
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: var(--card2);
-      font-size: 13px;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-    .dot{
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 18px rgba(140,160,255,.65);
-    }
-
-    .nav{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .btn{
-      appearance:none;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-weight: 650;
-      font-size: 13px;
-      letter-spacing:.2px;
+      box-shadow: 0 14px 36px rgba(0,0,0,.26);
       cursor:pointer;
-      transition: transform .18s ease, background .18s ease, border-color .18s ease;
-      transform-style: preserve-3d;
-    }
-    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.09); }
-    .btn:active{ transform: translateY(0px) scale(.99); }
-    .btn.primary{
-      border-color: rgba(140,160,255,.35);
-      background: rgba(140,160,255,.16);
-    }
-
-    .right-tools{
-      display:flex;
-      gap: 10px;
-      align-items:center;
-      justify-content:flex-end;
-      min-width: 240px;
-    }
-
-    .switch{
-      display:inline-flex;
-      align-items:center;
-      gap: 10px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: var(--card2);
-      cursor:pointer;
-      user-select:none;
-      font-size: 13px;
-      color: var(--muted);
-      transition: transform .18s ease, background .18s ease;
-    }
-    .switch:hover{ transform: translateY(-1px); }
-    .toggle{
-      width: 44px;
-      height: 24px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.08);
       position:relative;
-      flex: 0 0 auto;
-    }
-    .knob{
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.85);
-      position:absolute;
-      top: 1px; left: 1px;
-      transition: transform .22s ease;
-      box-shadow: 0 8px 18px rgba(0,0,0,.25);
-    }
-    [data-theme="light"] .knob{ background: rgba(10,18,40,.82); }
-    [data-theme="light"] .toggle .knob{ transform: translateX(20px); }
-
-    /* Main content */
-    .content{
-      display:grid;
-      grid-template-columns: 420px 1fr;
-      gap: 18px;
-      padding: 18px;
-    }
-    @media (max-width: 980px){
-      .content{ grid-template-columns: 1fr; }
-      .brand, .right-tools{ min-width: unset; }
-    }
-
-    .left{
-      padding: 18px;
-      border-radius: 18px;
-      border: 1px solid var(--stroke);
-      background: var(--card2);
-      position: relative;
       overflow:hidden;
+      transition: transform .16s ease, border-color .2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .toolBtn:active{ transform: scale(.98); }
+    .toolBtn::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(240px 120px at var(--mx,50%) var(--my,50%),
+        color-mix(in srgb, var(--accent), transparent 55%), transparent 70%);
+      opacity:.0;
+      transition: opacity .18s ease;
+      pointer-events:none;
+    }
+    .toolBtn:hover::before{ opacity:1; }
+    .toolBtn small{
+      display:block;
+      color: var(--muted2);
+      font-weight: 800;
+      letter-spacing:.08em;
+      margin-top: 4px;
     }
 
-    .pfp-wrap{
-      display:flex;
-      gap: 14px;
-      align-items:center;
-    }
-    .pfp{
-      width: 86px;
-      height: 86px;
-      border-radius: 20px;
-      object-fit: cover;
-      border: 1px solid var(--stroke);
-      box-shadow: 0 20px 55px rgba(0,0,0,.35);
+    .aiGrid{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
       transform: translateZ(18px);
     }
 
-    .name{
-      font-size: 34px;
-      line-height: 1.05;
-      margin: 0;
-      letter-spacing: -0.6px;
-      transform: translateZ(20px);
-    }
-    .name .char{
-      display:inline-block;
-      opacity: 0;
-      transform: translateY(14px) rotateX(30deg);
-      filter: blur(6px);
-      animation: popIn .72s cubic-bezier(.2,.8,.2,1) forwards;
-    }
-    @keyframes popIn{
-      to{ opacity:1; transform: translateY(0) rotateX(0); filter: blur(0); }
-    }
-
-    .desc{
-      margin: 10px 0 0;
-      color: var(--muted);
-      font-weight: 520;
-    }
-
-    .stats{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 16px;
-    }
-    .stat{
-      padding: 12px;
-      border-radius: 16px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
-      transform: translateZ(10px);
-    }
-    .stat .label{
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .stat .value{
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: .2px;
-    }
-
-    .info-row{
-      display:flex;
-      gap: 10px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-
-    /* Right side preview */
-    .right{
-      padding: 18px;
+    .aiCard{
       border-radius: 18px;
       border: 1px solid var(--stroke);
-      background: var(--card2);
+      background: color-mix(in srgb, var(--card), transparent 0%);
+      padding: 12px 12px;
+      box-shadow: 0 14px 35px rgba(0,0,0,.22);
+      position:relative;
       overflow:hidden;
-      position: relative;
+      text-decoration:none;
+      color: var(--text);
+      transition: transform .16s ease, border-color .2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .aiCard:active{ transform: scale(.985); }
+    .aiCard:hover{ border-color: color-mix(in srgb, var(--accent2), var(--stroke) 55%); }
+    .aiCard::after{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(260px 120px at var(--mx,50%) var(--my,50%),
+        color-mix(in srgb, var(--accent2), transparent 60%), transparent 70%);
+      opacity:0;
+      transition: opacity .18s ease;
+      pointer-events:none;
+    }
+    .aiCard:hover::after{ opacity:1; }
+    .aiCard b{
+      display:block;
+      font-size: 14px;
+      font-weight: 950;
+      letter-spacing:.2px;
+    }
+    .aiCard span{
+      display:block;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.25;
     }
 
-    .panel-title{
+    /* modal */
+    .modalBack{
+      position: fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding: 16px 14px calc(14px + env(safe-area-inset-bottom));
+      z-index: 50;
+      backdrop-filter: blur(10px);
+    }
+    .modalBack.show{ display:flex; animation: fadeIn .18s ease; }
+    @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+
+    .sheet{
+      width:min(560px, 100%);
+      border-radius: 22px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, var(--card2), var(--card));
+      box-shadow: 0 25px 70px rgba(0,0,0,.55);
+      overflow:hidden;
+      transform-origin: 50% 100%;
+      animation: popUp .22s cubic-bezier(.2,.9,.2,1);
+    }
+    @keyframes popUp{
+      from{ transform: translateY(18px) scale(.98); opacity:.8; }
+      to{ transform: translateY(0) scale(1); opacity:1; }
+    }
+
+    .sheetHead{
+      padding: 14px 14px 10px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap: 12px;
-      padding-bottom: 10px;
+      gap: 10px;
       border-bottom: 1px solid var(--stroke);
-      margin-bottom: 12px;
     }
-    .panel-title h2{
-      margin: 0;
-      font-size: 15px;
-      letter-spacing:.2px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .preview{
-      border-radius: 18px;
-      border: 1px solid var(--stroke);
-      overflow:hidden;
-      background: rgba(0,0,0,.22);
-      box-shadow: 0 18px 60px rgba(0,0,0,.30);
-      height: 520px;
-      transform: translateZ(10px);
-    }
-    iframe{
-      width:100%;
-      height:100%;
-      border:0;
-      background: transparent;
-    }
-
-    .hint{
+    .sheetHead b{ font-size: 14px; letter-spacing:.2px; }
+    .sheetBody{ padding: 14px; }
+    .sheetBody p{
+      margin:0 0 10px;
       color: var(--muted);
       font-size: 13px;
-      line-height: 1.5;
-      margin-top: 12px;
+      line-height:1.5;
+    }
+    .sheetBody a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 16px;
+      border: 1px solid color-mix(in srgb, var(--accent), var(--stroke) 60%);
+      background: radial-gradient(300px 120px at 30% 20%, color-mix(in srgb, var(--accent), transparent 70%), transparent 60%),
+                  linear-gradient(180deg, var(--card2), var(--card));
+      color: var(--text);
+      text-decoration:none;
+      font-weight: 950;
+      letter-spacing:.2px;
+      box-shadow: var(--glow);
+      margin-top: 10px;
     }
 
-    /* Subtle 3D tilt effect */
-    .tilt{
-      will-change: transform;
-      transition: transform .15s ease;
+    /* welcome overlay */
+    .welcome{
+      position:fixed;
+      inset:0;
+      z-index: 80;
+      display:grid;
+      place-items:center;
+      padding: 18px;
+      background:
+        radial-gradient(900px 600px at 50% 35%, color-mix(in srgb, var(--accent), transparent 80%), transparent 60%),
+        rgba(0,0,0,.56);
+      backdrop-filter: blur(14px);
+    }
+    .welcome.hidden{ display:none; }
+
+    .welcomeCard{
+      width:min(520px, 100%);
+      border-radius: 26px;
+      border: 1px solid color-mix(in srgb, var(--accent), var(--stroke) 55%);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--card2), transparent 0%), var(--card));
+      box-shadow: 0 30px 90px rgba(0,0,0,.65), var(--glow);
+      overflow:hidden;
+      transform-style: preserve-3d;
+      animation: welcomeIn .35s cubic-bezier(.2,.9,.2,1);
+    }
+    @keyframes welcomeIn{
+      from{ transform: translateY(14px) scale(.985); opacity:.6; }
+      to{ transform: translateY(0) scale(1); opacity:1; }
+    }
+
+    .welcomeCard .inner{
+      padding: 18px;
+    }
+    .welcomeTitle{
+      margin:0;
+      font-size: 20px;
+      font-weight: 1000;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+    }
+    .welcomeTitle .shimmer{ background-size: 220% 100%; }
+
+    .welcomeMsg{
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.6;
+    }
+    .welcomeBtns{
+      display:flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap:wrap;
+    }
+    .welcomeBtns .btn{ flex: 1 1 160px; }
+
+    /* responsive tweaks */
+    @media (min-width: 760px){
+      .hero{
+        grid-template-columns: 1fr;
+      }
+      .toolsRow{ grid-template-columns: repeat(3, 1fr); }
+      .aiGrid{ grid-template-columns: repeat(3, 1fr); }
+      .pfpWrap{ width: 104px; height: 104px; }
+      .name{ font-size: 28px; }
     }
   </style>
 </head>
-
-<body data-theme="dark">
-  <canvas id="bg"></canvas>
-  <div class="overlay"></div>
-
-  <div class="wrap">
-    <div class="card tilt" id="tiltCard">
-      <div class="topbar">
-        <div class="brand">
-          <span class="pill"><span class="dot"></span> Reniel Tabora</span>
-          <span class="pill" id="phTime">PH Time: --</span>
-        </div>
-
-        <div class="nav">
-          <button class="btn primary" data-target="home">Home</button>
-          <button class="btn" data-target="first">First Portfolio</button>
-          <button class="btn" data-target="autobot">Autobot</button>
-        </div>
-
-        <div class="right-tools">
-          <span class="pill" id="battery">Battery: --</span>
-          <div class="switch" id="themeToggle" title="Toggle Dark / Light">
-            <span id="themeLabel">Dark</span>
-            <span class="toggle"><span class="knob"></span></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="content">
-        <div class="left">
-          <div class="pfp-wrap">
-            <img class="pfp" alt="Reniel Tabora profile picture"
-              src="https://img.sanishtech.com/u/26a2f7005696403d64c7854507e2a4c9.jpg" />
-            <div>
-              <h1 class="name" id="animatedName" aria-label="Reniel Tabora"></h1>
-              <p class="desc">App Modder 2022-2026 and Editor videos</p>
-            </div>
-          </div>
-
-          <div class="stats" aria-label="Stats">
-            <div class="stat">
-              <div class="label">Followers</div>
-              <div class="value">41k</div>
-            </div>
-            <div class="stat">
-              <div class="label">Likes</div>
-              <div class="value">392k</div>
-            </div>
-            <div class="stat">
-              <div class="label">Views</div>
-              <div class="value" id="views">0</div>
-            </div>
-          </div>
-
-          <div class="info-row">
-            <span class="pill" id="dateLine">Date: --</span>
-            <span class="pill" id="modeLine">Mode: Dark</span>
-          </div>
-
-          <p class="hint">
-            Tip: Click <b>First Portfolio</b> or <b>Autobot</b> to preview inside this page.
-            Views automatically increase when someone opens this site (per session).
-          </p>
-        </div>
-
-        <div class="right">
-          <div class="panel-title">
-            <h2 id="panelTitle">Welcome</h2>
-            <span class="pill" id="panelUrl">—</span>
-          </div>
-
-          <div class="preview">
-            <iframe id="frame" title="Preview"></iframe>
-          </div>
-
-          <p class="hint" id="panelHint">
-            Select a project from the buttons above to load it here.
-          </p>
+<body>
+  <!-- Welcome Overlay -->
+  <div class="welcome" id="welcome">
+    <div class="welcomeCard" id="welcomeCard">
+      <div class="inner">
+        <h1 class="welcomeTitle"><span class="shimmer" id="welcomeText">WELCOME</span></h1>
+        <p class="welcomeMsg" id="welcomeSub">
+          Loading 3D experience… Rainbow theme enabled ✨<br/>
+          Tap “Enter” to continue.
+        </p>
+        <div class="welcomeBtns">
+          <button class="btn primary" id="enterBtn">Enter</button>
+          <button class="btn" id="skipAnimBtn">Skip animation</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Three.js -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script>
-    // --------- Animated name (letter-by-letter) ----------
-    const nameText = "Reniel Tabora";
-    const nameEl = document.getElementById("animatedName");
-    nameEl.innerHTML = "";
-    [...nameText].forEach((ch, i) => {
-      const span = document.createElement("span");
-      span.className = "char";
-      span.textContent = ch === " " ? "\u00A0" : ch;
-      span.style.animationDelay = (i * 0.04) + "s";
-      nameEl.appendChild(span);
-    });
+  <div class="wrap">
+    <div class="topbar">
+      <div class="pill status">
+        <span class="dot"></span>
+        <span id="phTime">Loading time…</span>
+        <span>•</span>
+        <span id="battery">Battery: --%</span>
+      </div>
 
-    // --------- PH date/time (Asia/Manila) ----------
-    const phTimeEl = document.getElementById("phTime");
-    const dateLineEl = document.getElementById("dateLine");
-    function updatePHClock(){
-      const now = new Date();
-      const timeStr = new Intl.DateTimeFormat("en-PH", {
-        timeZone: "Asia/Manila",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-      }).format(now);
+      <div class="toggle">
+        <button class="btn" id="themeBtn" title="Toggle Dark/Light">Dark/Light</button>
+      </div>
+    </div>
 
-      const dateStr = new Intl.DateTimeFormat("en-PH", {
-        timeZone: "Asia/Manila",
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "2-digit"
-      }).format(now);
-
-      phTimeEl.textContent = "PH Time: " + timeStr;
-      dateLineEl.textContent = "Date: " + dateStr;
-    }
-    updatePHClock();
-    setInterval(updatePHClock, 1000);
-
-    // --------- Views counter (per session, no backend) ----------
-    const viewsEl = document.getElementById("views");
-    const KEY_TOTAL = "rt_total_views";
-    const KEY_SESSION = "rt_session_counted";
-    const total = Number(localStorage.getItem(KEY_TOTAL) || "0");
-    const counted = sessionStorage.getItem(KEY_SESSION);
-
-    if(!counted){
-      const newTotal = total + 1;
-      localStorage.setItem(KEY_TOTAL, String(newTotal));
-      sessionStorage.setItem(KEY_SESSION, "1");
-      viewsEl.textContent = String(newTotal);
-    } else {
-      viewsEl.textContent = String(total);
-    }
-
-    // --------- Battery percentage (with fallback) ----------
-    const batteryEl = document.getElementById("battery");
-    async function initBattery(){
-      try{
-        if(!navigator.getBattery){
-          batteryEl.textContent = "Battery: N/A";
-          return;
-        }
-        const bat = await navigator.getBattery();
-        const set = () => {
-          const pct = Math.round((bat.level || 0) * 100);
-          batteryEl.textContent = "Battery: " + pct + "%";
-        };
-        set();
-        bat.addEventListener("levelchange", set);
-      } catch(e){
-        batteryEl.textContent = "Battery: N/A";
-      }
-    }
-    initBattery();
-
-    // --------- Dark / Light mode ----------
-    const themeToggle = document.getElementById("themeToggle");
-    const themeLabel = document.getElementById("themeLabel");
-    const modeLine = document.getElementById("modeLine");
-
-    const THEME_KEY = "rt_theme";
-    function applyTheme(theme){
-      document.body.setAttribute("data-theme", theme);
-      themeLabel.textContent = theme === "light" ? "Light" : "Dark";
-      modeLine.textContent = "Mode: " + (theme === "light" ? "Light" : "Dark");
-      localStorage.setItem(THEME_KEY, theme);
-    }
-    applyTheme(localStorage.getItem(THEME_KEY) || "dark");
-
-    themeToggle.addEventListener("click", () => {
-      const current = document.body.getAttribute("data-theme");
-      applyTheme(current === "dark" ? "light" : "dark");
-    });
-
-    // --------- Top buttons + iframe preview ----------
-    const frame = document.getElementById("frame");
-    const panelTitle = document.getElementById("panelTitle");
-    const panelUrl = document.getElementById("panelUrl");
-    const panelHint = document.getElementById("panelHint");
-
-    const targets = {
-      home: { title: "Welcome", url: "", hint: "Select a project from the buttons above to load it here." },
-      first: { title: "First Portfolio", url: "https://visionary-naiad-bb54e3.netlify.app/", hint: "Preview loaded. If it blocks iframe, click Open in new tab." },
-      autobot: { title: "Autobot", url: "https://auto-zvok.onrender.com/", hint: "Preview loaded. If it blocks iframe, click Open in new tab." }
-    };
-
-    function loadTarget(key){
-      const t = targets[key];
-      panelTitle.textContent = t.title;
-      panelUrl.textContent = t.url || "—";
-      panelHint.textContent = t.hint;
-
-      if(!t.url){
-        frame.srcdoc = `
-          <div style="height:100%;display:flex;align-items:center;justify-content:center;
-                      font-family:system-ui;color:#bbb;background:transparent;">
-            <div style="text-align:center;max-width:520px;padding:20px;">
-              <h2 style="margin:0 0 10px;color:#ddd;">Reniel Tabora</h2>
-              <p style="margin:0;line-height:1.5;">
-                Click <b>First Portfolio</b> or <b>Autobot</b> to preview here.
-              </p>
-              <p style="margin-top:10px;opacity:.85;">App Modder 2022-2026 • Video Editor</p>
+    <div class="stage" id="stage">
+      <div class="card3d" id="card3d" aria-label="Reniel Tabora Portfolio">
+        <div class="hero">
+          <div class="heroTop">
+            <div class="pfpWrap">
+              <img src="https://img.sanishtech.com/u/86253bb941bdfbe89ddfccb8fe766965.jpg" alt="Reniel Tabora profile picture" />
             </div>
-          </div>`;
-        return;
-      }
 
-      // Try iframe. If site blocks embedding, user can still open in new tab.
-      frame.removeAttribute("srcdoc");
-      frame.src = t.url;
+            <div class="title">
+              <div class="nameRow">
+                <h1 class="name">
+                  <span class="shimmer" id="typedName"></span><span class="caret" id="caret"></span>
+                </h1>
+                <span class="badge" title="Verified">
+                  <span class="check">✓</span> Verified
+                </span>
+              </div>
 
-      // Add "open in new tab" automatically if embedding is blocked
-      setTimeout(() => {
-        panelHint.innerHTML = `${t.hint} <a href="${t.url}" target="_blank" rel="noopener" style="color:inherit;font-weight:800;text-decoration:underline;">Open in new tab</a>`;
-      }, 800);
-    }
+              <p class="desc">
+                <b style="color:var(--text)">App Modder 2022-2026</b> and <b style="color:var(--text)">Editor videos</b>.
+                3D mobile portfolio with rainbow effects, fast tools, and AI hub.
+              </p>
 
-    document.querySelectorAll("[data-target]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        // UI active state
-        document.querySelectorAll(".btn").forEach(b=>b.classList.remove("primary"));
-        btn.classList.add("primary");
-        loadTarget(btn.dataset.target);
-      });
-    });
+              <div class="stats">
+                <div class="chip"><span>Followers</span> <b>41k</b></div>
+                <div class="chip"><span>Likes</span> <b>392k</b></div>
+                <div class="chip"><span>Views</span> <b id="views">0</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    loadTarget("home");
+        <div class="grid">
+          <div class="sectionTitle">
+            <h2>Tools</h2>
+            <button class="btn" id="randomHueBtn" title="Random rainbow">Rainbow</button>
+          </div>
 
-    // --------- 3D tilt card (mouse / touch) ----------
-    const tiltCard = document.getElementById("tiltCard");
-    function setTilt(clientX, clientY){
-      const rect = tiltCard.getBoundingClientRect();
-      const x = (clientX - rect.left) / rect.width - 0.5;
-      const y = (clientY - rect.top) / rect.height - 0.5;
-      const rx = (-y * 7);
-      const ry = (x * 10);
-      tiltCard.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) translateZ(0)`;
-    }
-    function resetTilt(){ tiltCard.style.transform = `rotateX(0deg) rotateY(0deg)`; }
-
-    window.addEventListener("mousemove", (e)=> setTilt(e.clientX, e.clientY), {passive:true});
-    window.addEventListener("mouseleave", resetTilt);
-    window.addEventListener("touchmove", (e)=>{
-      if(e.touches && e.touches[0]) setTilt(e.touches[0].clientX, e.touches[0].clientY);
-    }, {passive:true});
-    window.addEventListener("touchend", resetTilt);
-
-    // --------- Three.js 3D background (premium floating particles) ----------
-    const canvas = document.getElementById("bg");
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
-    camera.position.z = 40;
-
-    function resize(){
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-    }
-    window.addEventListener("resize", resize);
-    resize();
-
-    // Particles
-    const count = 1500;
-    const geo = new THREE.BufferGeometry();
-    const positions = new Float32Array(count * 3);
-    const speeds = new Float32Array(count);
-
-    for(let i=0;i<count;i++){
-      const i3 = i*3;
-      positions[i3+0] = (Math.random()-0.5) * 140;
-      positions[i3+1] = (Math.random()-0.5) * 90;
-      positions[i3+2] = (Math.random()-0.5) * 120;
-      speeds[i] = 0.2 + Math.random() * 0.8;
-    }
-    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-    const mat = new THREE.PointsMaterial({
-      size: 0.22,
-      transparent: true,
-      opacity: 0.85,
-      depthWrite: false
-    });
-
-    const points = new THREE.Points(geo, mat);
-    scene.add(points);
-
-    // Subtle rings
-    const ringGeo = new THREE.TorusGeometry(18, 0.08, 12, 220);
-    const ringMat = new THREE.MeshBasicMaterial({ transparent:true, opacity:.25 });
-    const ring1 = new THREE.Mesh(ringGeo, ringMat);
-    ring1.rotation.x = 0.7
+          <!-- TOP 3 BUTTONS -->
+          <div class="toolsRow">
+            <button class="toolBtn" data-open="tiktok">
+              TikTok Downloader
+              <small>SnapTik</small>
+            </button>
+            <button class="toolBtn" data-open="facebook">
+              Facebook Downloader
+              <small>FDown</small>
+            </button>
+            <button class="toolBtn" data-open="instagram">
+              Instagram Downloader
+              <small>SnapInsta</small>
+            
